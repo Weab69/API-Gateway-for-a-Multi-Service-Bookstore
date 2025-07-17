@@ -1,6 +1,7 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv"
 import logger from "./utils/logger";
+import { setupSwagger } from "./docs/swagger";
 
 dotenv.config();
 
@@ -13,13 +14,46 @@ app.use((req, res, next) => {
     next()
 })
 
-app.get("/", (req: Request,res: Response) => {
-    res.send("Hello from express + TS")
-})
+setupSwagger(app);
 
-app.get("/hi", (req: Request,res: Response) => {
-    res.send("byeeee")
-})
+/**
+ * @openapi
+ * /:
+ *   get:
+ *     summary: Root endpoint
+ *     description: Returns a simple greeting message.
+ *     responses:
+ *       200:
+ *         description: A successful response
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: Hello from express + TS
+ */
+app.get("/", (req: Request, res: Response) => {
+    res.send("Hello from express + TS");
+});
+
+/**
+ * @openapi
+ * /hi:
+ *   get:
+ *     summary: Hi endpoint
+ *     description: Returns a farewell message.
+ *     responses:
+ *       200:
+ *         description: A successful response
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: byeeee
+ */
+app.get("/hi", (req: Request, res: Response) => {
+    res.send("byeeee");
+});
+
 
 app.listen(port, ()=> {
     console.log(`now listining on port ${port}`);
