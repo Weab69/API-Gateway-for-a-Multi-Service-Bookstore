@@ -1,60 +1,26 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv"
-import logger from "./utils/logger";
-import { setupSwagger } from "./docs/swagger";
+import bookRoutes from './modules/books/routes/bookRoutes';
+import reviewRoutes from './modules/reviews/routes/reviewRoutes';
+import { logger } from './utils/logger';
+import { setupSwagger } from './docs/swagger';
 
 dotenv.config();
 
-const port = process.env.PORT || 8000;
+const app = express();
+const port = process.env.PORT || 3000;
 
-const app: Express = express();
+app.use(express.json());
 
 app.use((req, res, next) => {
     logger.info(`${req.method} ${req.url}`);
     next()
 })
 
+app.use('/books', bookRoutes);
+
 setupSwagger(app);
 
-/**
- * @openapi
- * /:
- *   get:
- *     summary: Root endpoint
- *     description: Returns a simple greeting message.
- *     responses:
- *       200:
- *         description: A successful response
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- *               example: Hello from express + TS
- */
-app.get("/", (req: Request, res: Response) => {
-    res.send("Hello from express + TS");
+app.listen(port, () => {
+    logger.info(`Server is running on port ${port}`);
 });
-
-/**
- * @openapi
- * /hi:
- *   get:
- *     summary: Hi endpoint
- *     description: Returns a farewell message.
- *     responses:
- *       200:
- *         description: A successful response
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- *               example: byeeee
- */
-app.get("/hi", (req: Request, res: Response) => {
-    res.send("byeeee");
-});
-
-
-app.listen(port, ()=> {
-    console.log(`now listining on port ${port}`);
-})
