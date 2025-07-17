@@ -2,10 +2,8 @@ import axios from 'axios';
 import { searchBooks } from '../../src/modules/books/services/bookService';
 import { OpenLibraryResponse } from '../../src/modules/books/types/book.types';
 
-// Mock the axios module
 jest.mock('axios');
 
-// Create a typed mock for the axios.get function
 const mockedAxiosGet = axios.get as jest.Mock;
 
 describe('Unit: bookService', () => {
@@ -27,7 +25,6 @@ describe('Unit: bookService', () => {
       ],
     };
 
-    // Mock the resolved value of the axios.get call
     mockedAxiosGet.mockResolvedValue({ data: mockApiResponse });
 
     const books = await searchBooks('test');
@@ -45,10 +42,6 @@ describe('Unit: bookService', () => {
         {
           key: '/works/OL2W',
           title: 'Book Two',
-          author_name: undefined, // Missing author
-          first_sentence: undefined, // Missing description
-          isbn: undefined, // Missing ISBN
-          cover_i: undefined, // Missing cover
         },
       ],
     };
@@ -59,7 +52,8 @@ describe('Unit: bookService', () => {
 
     expect(books).toHaveLength(1);
     expect(books[0].id).toBe('/works/OL2W');
-    expect(books[0].authors).toBeUndefined(); // Check for graceful handling
+    expect(books[0].authors).toEqual([]); 
+    expect(books[0].isbn).toEqual([]); 
     expect(books[0].description).toBe('No description available.');
     expect(books[0].cover_image).toBe('No cover image available.');
   });
