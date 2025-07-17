@@ -18,6 +18,7 @@ app.use((req, res, next) => {
 })
 
 app.use('/books', bookRoutes);
+app.use('/reviews', reviewRoutes);
 
 setupSwagger(app);
 
