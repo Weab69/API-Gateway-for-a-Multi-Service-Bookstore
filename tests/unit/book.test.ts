@@ -1,50 +1,75 @@
-import request from 'supertest';
-import express from 'express';
-import bookRoutes from '../../src/modules/books/routes/bookRoutes';
-import * as bookService from '../../src/modules/books/services/bookService';
+import axios from 'axios';
+import { searchBooks } from '../../src/modules/books/services/bookService';
+import { OpenLibraryResponse } from '../../src/modules/books/types/book.types';
 
-const app = express();
-app.use('/books', bookRoutes);
+// Mock the axios module
+jest.mock('axios');
 
-jest.mock('../../src/modules/books/services/bookService');
+// Create a typed mock for the axios.get function
+const mockedAxiosGet = axios.get as jest.Mock;
 
-const mockedSearchBooks = bookService.searchBooks as jest.Mock;
-
-describe('GET /books/search', () => {
-  it('should return a list of books when searching with a valid query', async () => {
-    const mockBooks = [
-      {
-        id: '/works/OL82563W',
-        title: 'Harry Potter and the Sorcerer\'s Stone',
-        authors: ['J.K. Rowling'],
-        description: 'A summary of the book.',
-        isbn: ['9780590353427'],
-        cover_image: 'http://covers.openlibrary.org/b/id/12345-L.jpg',
-      },
-    ];
-
-    mockedSearchBooks.mockResolvedValue(mockBooks);
-
-    const response = await request(app).get('/books/search?q=harry+potter');
-
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual(mockBooks);
-    expect(mockedSearchBooks).toHaveBeenCalledWith('harry potter');
+describe('Unit: bookService', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('should return a 400 error if the search query is missing', async () => {
-    const response = await request(app).get('/books/search');
+  it('should correctly parse a valid API response', async () => {
+    const mockApiResponse: OpenLibraryResponse = {
+      docs: [
+        {
+          key: '/works/OL1W',
+          title: 'Book One',
+          author_name: ['Author A'],
+          first_sentence: ['It was a dark and stormy night.'],
+          isbn: ['12345'],
+          cover_i: 1,
+        },
+      ],
+    };
 
-    expect(response.status).toBe(400);
-    expect(response.body).toEqual({ message: 'Search query is required' });
+    // Mock the resolved value of the axios.get call
+    mockedAxiosGet.mockResolvedValue({ data: mockApiResponse });
+
+    const books = await searchBooks('test');
+
+    expect(books).toHaveLength(1);
+    expect(books[0].id).toBe('/works/OL1W');
+    expect(books[0].title).toBe('Book One');
+    expect(books[0].description).toBe('It was a dark and stormy night.');
+    expect(axios.get).toHaveBeenCalledTimes(1);
   });
 
-  it('should return a 500 error if the service throws an error', async () => {
-    mockedSearchBooks.mockRejectedValue(new Error('Service Error'));
+  it('should handle books with missing optional fields gracefully', async () => {
+    const mockApiResponse: OpenLibraryResponse = {
+      docs: [
+        {
+          key: '/works/OL2W',
+          title: 'Book Two',
+          author_name: undefined, // Missing author
+          first_sentence: undefined, // Missing description
+          isbn: undefined, // Missing ISBN
+          cover_i: undefined, // Missing cover
+        },
+      ],
+    };
 
-    const response = await request(app).get('/books/search?q=error');
+    mockedAxiosGet.mockResolvedValue({ data: mockApiResponse });
 
-    expect(response.status).toBe(500);
-    expect(response.body).toEqual({ message: 'Error fetching book data' });
+    const books = await searchBooks('test');
+
+    expect(books).toHaveLength(1);
+    expect(books[0].id).toBe('/works/OL2W');
+    expect(books[0].authors).toBeUndefined(); // Check for graceful handling
+    expect(books[0].description).toBe('No description available.');
+    expect(books[0].cover_image).toBe('No cover image available.');
+  });
+
+  it('should return an empty array when the API returns no docs', async () => {
+    const mockApiResponse: OpenLibraryResponse = { docs: [] };
+    mockedAxiosGet.mockResolvedValue({ data: mockApiResponse });
+
+    const books = await searchBooks('empty');
+
+    expect(books).toHaveLength(0);
   });
 });
