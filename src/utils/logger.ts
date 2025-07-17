@@ -1,6 +1,6 @@
 import { createLogger, format, transports } from "winston";
 
-const logger = createLogger({
+export const logger = createLogger({
     level: 'info',
     format: format.combine(
         format.timestamp(),
@@ -13,5 +13,3 @@ const logger = createLogger({
         new transports.File({  filename: 'logs/combined.log' }),
     ],
 });
-
-export default logger
