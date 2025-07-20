@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import passport from 'passport';
 import { addReview } from '../controllers/reviewController';
+import { getAllReviews } from '../services/reviewService';
 
 const router = Router();
 
@@ -45,5 +46,33 @@ const router = Router();
  *         description: Unauthorized
  */
 router.post('/', passport.authenticate('jwt', { session: false }), addReview);
+
+/**
+ * @swagger
+ * /reviews:
+ *   get:
+ *     summary: Get all reviews
+ *     tags: [Reviews]
+ *     responses:
+ *       200:
+ *         description: A list of all reviews
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   bookId:
+ *                     type: string
+ *                   userId:
+ *                     type: string
+ *                   comment:
+ *                     type: string
+ *                   rating:
+ *                     type: number
+ */
+// router.post('/', passport.authenticate('jwt', { session: false }), getAllReviews);
+router.get('/', getAllReviews);
 
 export default router;
