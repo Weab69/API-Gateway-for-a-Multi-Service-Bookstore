@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { addReview } from '../controllers/reviewController';
+import passport from 'passport';
+import { addReview, getAllReviews } from '../controllers/reviewController';
 
 const router = Router();
 
@@ -16,6 +17,8 @@ const router = Router();
  *   post:
  *     summary: Create a new review
  *     tags: [Reviews]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -24,13 +27,10 @@ const router = Router();
  *             type: object
  *             required:
  *               - bookId
- *               - userId
  *               - rating
  *               - comment
  *             properties:
  *               bookId:
- *                 type: string
- *               userId:
  *                 type: string
  *               rating:
  *                 type: number
@@ -41,7 +41,37 @@ const router = Router();
  *         description: The review was successfully created
  *       400:
  *         description: Missing required review fields
+ *       401:
+ *         description: Unauthorized
  */
-router.post('/', addReview);
+router.post('/', passport.authenticate('jwt', { session: false }), addReview);
+
+/**
+ * @swagger
+ * /reviews:
+ *   get:
+ *     summary: Get all reviews
+ *     tags: [Reviews]
+ *     responses:
+ *       200:
+ *         description: A list of all reviews
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   bookId:
+ *                     type: string
+ *                   userId:
+ *                     type: string
+ *                   comment:
+ *                     type: string
+ *                   rating:
+ *                     type: number
+ */
+
+router.get('/', getAllReviews);
 
 export default router;

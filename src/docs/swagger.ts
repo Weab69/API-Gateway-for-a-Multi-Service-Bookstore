@@ -6,13 +6,27 @@ const options: swaggerJSDoc.Options = {
   definition: {
     openapi: '3.0.0',
     info: {
-        title: 'API-Gateway-for-a-Multi-Service-Bookstore',
-        version: '1.0.0',
-        description: 'API documentation with Swagger',
-      },
+      title: 'API-Gateway-for-a-Multi-Service-Bookstore',
+      version: '1.0.0',
+      description: 'API documentation with Swagger',
+    },
     servers: [
       {
         url: 'http://localhost:8000',
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+    security: [
+      {
+        bearerAuth: [],
       },
     ],
   },
