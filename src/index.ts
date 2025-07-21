@@ -29,7 +29,7 @@ if(!mongoUri || !jwtSecret || !jwtRefreshSecret){
 const app = express();
 const port = process.env.PORT || 8000;
 
-// Apply global middleware
+
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
@@ -56,9 +56,13 @@ async function startServer() {
     await server.start();
 
     // Setup GraphQL endpoint
-    app.use('/graphql', expressMiddleware(server, {
-        context: async ({ req: _req }: { req: Request }) => ({}),
-    }));
+    app.use(
+        '/graphql',
+        express.json(), 
+        expressMiddleware(server, {
+            context: async ({ req: _req }: { req: Request }) => ({}),
+        })
+    );
 
     setupSwagger(app);
 
