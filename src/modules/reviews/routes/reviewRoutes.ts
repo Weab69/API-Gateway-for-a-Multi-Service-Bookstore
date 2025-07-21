@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import passport from 'passport';
-import { addReview } from '../controllers/reviewController';
-import { getAllReviews } from '../services/reviewService';
+import { addReview, getAllReviews } from '../controllers/reviewController';
 
 const router = Router();
 
@@ -72,7 +71,7 @@ router.post('/', passport.authenticate('jwt', { session: false }), addReview);
  *                   rating:
  *                     type: number
  */
-// router.post('/', passport.authenticate('jwt', { session: false }), getAllReviews);
+
 router.get('/', getAllReviews);
 
 export default router;
